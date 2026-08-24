@@ -8,14 +8,23 @@ services:
     build:
       context: .
     image: org-chart-generator:latest
+    environment:
+      # pnpm is non-interactive in here; never prompt to confirm a modules purge.
+      - CI=true
     ports:
       - "3000:3000"
     volumes:
       - .:/app
-      - ./node_modules:/app/node_modules
-      - ./.next:/app/.next
+      # Keep node_modules/.next inside the container: the host copies are built
+      # against a different pnpm store and clobber the image's install.
+      - org-chart-generator-node-modules:/app/node_modules
+      - org-chart-generator-next:/app/.next
     labels:
       - traefik.enable=true
       - traefik.http.routers.org-chart-generator.rule=Host(`org-chart-generator.localhost`)
       - traefik.http.routers.org-chart-generator.entrypoints=web
       - traefik.http.services.org-chart-generator.loadbalancer.server.port=3000
+
+volumes:
+  org-chart-generator-node-modules:
+  org-chart-generator-next:
