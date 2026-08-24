@@ -3,8 +3,18 @@ export type Person = {
   position: string;
   title: string;
   name: string;
-  /** Optional per-person header colour, overrides the row colour. */
+  /**
+   * Optional per-person colour. Overrides the row colour: it fills the header
+   * band in the basic layout and the accent bar in the linkedin layout.
+   */
   color?: string;
+  /** Rendered under the name as a middle-dot separated subtitle. */
+  phone?: string;
+  email?: string;
+  /** Image URL or data: URI, drawn as a circular avatar left of the name. */
+  headshot?: string;
+  /** Absolute https profile URL, normalised by the parser. Used by the linkedin layout. */
+  linkedin?: string;
 };
 
 export type LayoutOptions = {

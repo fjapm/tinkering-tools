@@ -6,7 +6,9 @@ const BARE_WORD = /^[A-Za-z_][A-Za-z0-9_-]*$/;
 const RESERVED = new Set(["true", "false", "inf", "nan"]);
 const DOTTED_NUMBER = /^[0-9]+(?:\.[0-9]+)*$/;
 const KEY_VALUE = /^(\s*)([A-Za-z0-9_-]+)(\s*=\s*)(.*?)(\s*(?:#.*)?)$/;
-const SUPPORTED_LAYOUTS = new Set(["basic"]);
+const SUPPORTED_LAYOUTS = new Set(["basic", "linkedin"]);
+const LINKEDIN_HOST = /^[\w.-]*linkedin\.com\//i;
+const LINKEDIN_HANDLE = /^[\w.-]+$/;
 const DEFAULT_BG_COLOR = "#f7faff";
 
 /**
@@ -71,6 +73,19 @@ function readLayout(raw: unknown): LayoutOptions {
   };
 }
 
+/**
+ * Accept a full URL, a scheme-less linkedin.com path, or a bare vanity handle,
+ * and always come back with an absolute https URL. Returning null for anything
+ * else keeps javascript: and other schemes out of the exported SVG's href.
+ */
+function normalizeLinkedIn(value: string): string | null {
+  const url = value.trim();
+  if (/^https:\/\//i.test(url)) return url;
+  if (LINKEDIN_HOST.test(url)) return `https://${url}`;
+  if (LINKEDIN_HANDLE.test(url)) return `https://www.linkedin.com/in/${url}`;
+  return null;
+}
+
 function readPeople(raw: unknown): Person[] | string {
   if (raw === undefined) return "No [[person]] entries found.";
   const entries = Array.isArray(raw) ? raw : [raw];
@@ -85,11 +100,25 @@ function readPeople(raw: unknown): Person[] | string {
     if (!DOTTED_NUMBER.test(position)) {
       return `Invalid position "${position}" — expected a dotted number like 1, 1.2 or 1.2.3.`;
     }
+    const linkedin = asString(table.linkedin);
+    let profile: string | undefined;
+    if (linkedin) {
+      const normalized = normalizeLinkedIn(linkedin);
+      if (!normalized) {
+        return `Invalid linkedin "${linkedin}" for position "${position}" — expected an https URL, a linkedin.com path, or a profile handle.`;
+      }
+      profile = normalized;
+    }
+
     people.push({
       position,
       title: asString(table.title) ?? "",
       name: asString(table.name) ?? "",
       color: asString(table.color) ?? undefined,
+      phone: asString(table.phone) ?? undefined,
+      email: asString(table.email) ?? undefined,
+      headshot: asString(table.headshot) ?? undefined,
+      linkedin: profile,
     });
   }
   return people;
