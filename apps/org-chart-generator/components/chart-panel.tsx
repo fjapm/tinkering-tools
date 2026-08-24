@@ -7,7 +7,6 @@ import {
   FileTextIcon,
   FileCodeIcon,
   InfoIcon,
-  MenuIcon,
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -23,17 +22,7 @@ const EXPORTERS: Record<Format, (chart: RenderedChart) => ExportResult | Promise
   pdf: downloadPdf,
 };
 
-export function ChartPanel({
-  chart,
-  error,
-  editorOpen,
-  onOpenEditor,
-}: {
-  chart: RenderedChart | null;
-  error: string | null;
-  editorOpen: boolean;
-  onOpenEditor: () => void;
-}) {
+export function ChartPanel({ chart, error }: { chart: RenderedChart | null; error: string | null }) {
   const [busy, setBusy] = useState<Format | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportWarning, setExportWarning] = useState<string | null>(null);
@@ -56,19 +45,7 @@ export function ChartPanel({
   return (
     <section className="flex min-h-0 min-w-0 flex-col">
       <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-2 sm:px-4">
-        <div className="flex min-w-0 items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            aria-label="Open the editor"
-            aria-expanded={editorOpen}
-            onClick={onOpenEditor}
-          >
-            <MenuIcon />
-          </Button>
-          <span className="truncate text-sm font-medium">Preview</span>
-        </div>
+        <span className="truncate text-sm font-medium">Preview</span>
         {/* Labels drop away on narrow screens so all three still fit. */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <Button variant="outline" size="sm" disabled={!chart || busy !== null} onClick={() => exportAs("svg")}>
