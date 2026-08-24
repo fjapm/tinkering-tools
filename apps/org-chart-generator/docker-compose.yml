@@ -1,0 +1,21 @@
+name: tinkering-tools-monorepo
+
+include:
+  - ../../docker-compose.yml
+
+services:
+  org-chart-generator:
+    build:
+      context: .
+    image: org-chart-generator:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - ./node_modules:/app/node_modules
+      - ./.next:/app/.next
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.org-chart-generator.rule=Host(`org-chart-generator.localhost`)
+      - traefik.http.routers.org-chart-generator.entrypoints=web
+      - traefik.http.services.org-chart-generator.loadbalancer.server.port=3000
