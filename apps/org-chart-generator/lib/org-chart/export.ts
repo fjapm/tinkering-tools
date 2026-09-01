@@ -29,8 +29,8 @@ function imageHref(image: Element): string | null {
 
 /**
  * Neither the canvas rasterizer nor svg2pdf can pull in an external image, so
- * every headshot has to be embedded as a data: URI first. Hosts that don't send
- * CORS headers will refuse the fetch — drop those images so the initials circle
+ * every headshot and flag has to be embedded as a data: URI first. Hosts that
+ * don't send CORS headers will refuse the fetch — drop those images so whatever
  * the renderer drew underneath shows through, and report how many were lost.
  */
 async function embedImages(svg: string): Promise<{ svg: string; dropped: number }> {
@@ -62,8 +62,8 @@ async function embedImages(svg: string): Promise<{ svg: string; dropped: number 
 
 function droppedWarning(dropped: number): string | null {
   if (dropped === 0) return null;
-  const subject = dropped === 1 ? "headshot" : `${dropped} headshots`;
-  return `Could not embed ${subject} — the image host has to allow cross-origin requests, or you can inline the picture as a data: URI. Initials were used instead.`;
+  const subject = dropped === 1 ? "an image" : `${dropped} images`;
+  return `Could not embed ${subject} — the image host has to allow cross-origin requests, or you can inline the picture as a data: URI. Headshots fall back to the person's initials.`;
 }
 
 export function downloadSvg(chart: RenderedChart, filename = "org-chart.svg"): ExportResult {

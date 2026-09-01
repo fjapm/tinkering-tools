@@ -146,8 +146,8 @@ export const basicCard: CardStyle = (all, layout) => {
 
 // ── linkedin ───────────────────────────────────────────────────────────────
 // Profile card: a coloured accent bar with the avatar straddling it, the
-// LinkedIn badge in the corner, then the name and a wrapping role. The whole
-// card is a link to the person's profile.
+// LinkedIn badge and the country flag in the corner, then the name and a
+// wrapping role. The whole card is a link to the person's profile.
 
 const LI_BAR_H = 9;
 const LI_AVATAR_R = 21;
@@ -171,8 +171,23 @@ const LI_BORDER = "#e3e8ef";
 const LI_ROLE_INK = "#5b6675";
 const LI_BADGE_BLUE = "#0a66c2";
 
+const LI_FLAG_W = 16;
+const LI_FLAG_H = 12;
+const LI_CORNER_GAP = 5;
+/** Clearance the corner cluster keeps from the avatar straddling the bar. */
+const LI_CORNER_CLEAR = 6;
+
 const LI_AVATAR_CY = LI_BAR_H / 2;
 const LI_AVATAR_BOTTOM = LI_AVATAR_CY + LI_AVATAR_R;
+
+/**
+ * A card wide enough that the badge + flag cluster clears the centred avatar.
+ * Only applied when the chart has flags — without one the cluster is narrow
+ * enough to fit inside LI_MIN_W.
+ */
+const LI_FLAG_MIN_W = Math.ceil(
+  2 * (LI_PAD_X + LI_BADGE + LI_CORNER_GAP + LI_FLAG_W + LI_AVATAR_R + LI_RING + LI_CORNER_CLEAR),
+);
 
 function linkedinAvatar(node: OrgNode, cx: number, cy: number, fill: string): string {
   const clipId = `li-headshot-${nodeId(node)}`;
@@ -192,8 +207,14 @@ function linkedinAvatar(node: OrgNode, cx: number, cy: number, fill: string): st
   ].join("");
 }
 
-function linkedinBadge(x: number, y: number, width: number): string {
-  const bx = x + width - LI_PAD_X - LI_BADGE;
+/**
+ * The badge sits at the right edge, unless the chart uses flags — then it moves
+ * one flag to the left so the badges line up across every card, whether or not
+ * that particular person has a country.
+ */
+function linkedinBadge(x: number, y: number, width: number, hasFlags: boolean): string {
+  const slot = hasFlags ? LI_FLAG_W + LI_CORNER_GAP : 0;
+  const bx = x + width - LI_PAD_X - slot - LI_BADGE;
   const by = y + LI_BAR_H - LI_BADGE / 2;
   return [
     `<rect x="${bx}" y="${by}" width="${LI_BADGE}" height="${LI_BADGE}" rx="3" fill="${LI_BADGE_BLUE}"/>`,
@@ -201,14 +222,34 @@ function linkedinBadge(x: number, y: number, width: number): string {
   ].join("");
 }
 
+/**
+ * The flag, drawn to the right of the badge. flagcdn serves these with an open
+ * CORS policy, so the exporters can inline them the same way they inline
+ * headshots; if the fetch fails the empty rounded outline is what remains.
+ */
+function countryFlag(node: OrgNode, x: number, y: number, width: number): string {
+  const fx = x + width - LI_PAD_X - LI_FLAG_W;
+  const fy = y + LI_BAR_H - LI_FLAG_H / 2;
+  const clipId = `li-flag-${nodeId(node)}`;
+  const href = escapeXml(`https://flagcdn.com/w80/${String(node.country).toLowerCase()}.png`);
+
+  return [
+    `<clipPath id="${clipId}"><rect x="${fx}" y="${fy}" width="${LI_FLAG_W}" height="${LI_FLAG_H}" rx="2"/></clipPath>`,
+    `<image clip-path="url(#${clipId})" x="${fx}" y="${fy}" width="${LI_FLAG_W}" height="${LI_FLAG_H}" preserveAspectRatio="xMidYMid slice" href="${href}" xlink:href="${href}"/>`,
+    `<rect x="${fx}" y="${fy}" width="${LI_FLAG_W}" height="${LI_FLAG_H}" rx="2" fill="none" stroke="${LI_BORDER}" stroke-width="1"/>`,
+  ].join("");
+}
+
 export const linkedinCard: CardStyle = (all, layout) => {
   const hasAttrs = all.some((node) => attributeLine(node) !== "");
+  const hasFlags = all.some((node) => Boolean(node.country));
 
   const content = all.reduce(
     (max, node) => Math.max(max, measureText(node.name, LI_NAME_SIZE, true) + LI_PAD_X * 2),
     0,
   );
-  const width = Math.round(Math.min(LI_MAX_W, Math.max(LI_MIN_W, content)));
+  const minWidth = hasFlags ? LI_FLAG_MIN_W : LI_MIN_W;
+  const width = Math.round(Math.min(LI_MAX_W, Math.max(minWidth, content)));
   const textWidth = width - LI_PAD_X * 2;
 
   // One uniform card height, so the role block is as tall as the wordiest role.
@@ -243,7 +284,8 @@ export const linkedinCard: CardStyle = (all, layout) => {
         `<clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${LI_RADIUS}"/></clipPath>`,
         `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${LI_RADIUS}" fill="#ffffff" stroke="${LI_BORDER}" stroke-width="1"/>`,
         `<rect clip-path="url(#${clipId})" x="${x}" y="${y}" width="${width}" height="${LI_BAR_H}" fill="${fill}"/>`,
-        node.linkedin ? linkedinBadge(x, y, width) : "",
+        node.linkedin ? linkedinBadge(x, y, width, hasFlags) : "",
+        node.country ? countryFlag(node, x, y, width) : "",
         linkedinAvatar(node, centerX, y + LI_AVATAR_CY, fill),
         `<text x="${centerX}" y="${nameBaseline}" text-anchor="middle" font-size="${LI_NAME_SIZE}" font-weight="700" fill="${INK}">${escapeXml(ellipsize(node.name, textWidth, LI_NAME_SIZE, true))}</text>`,
         roles

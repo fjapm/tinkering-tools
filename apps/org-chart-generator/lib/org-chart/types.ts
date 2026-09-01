@@ -15,6 +15,8 @@ export type Person = {
   headshot?: string;
   /** Absolute https profile URL, normalised by the parser. Used by the linkedin layout. */
   linkedin?: string;
+  /** Upper-case ISO 3166-1 alpha-2 code, e.g. "BR". Drawn as a flag by the linkedin layout. */
+  country?: string;
 };
 
 export type LayoutOptions = {
