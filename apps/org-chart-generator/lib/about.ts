@@ -82,6 +82,12 @@ export const ATTRIBUTES: Attribute[] = [
     description:
       "Profile URL or handle. In the linkedin layout the card becomes a link that opens the profile in a new tab.",
   },
+  {
+    key: "country",
+    required: false,
+    description:
+      "Two-letter country code, e.g. BR or US. The linkedin layout draws that country's flag to the right of the LinkedIn badge.",
+  },
 ];
 
 export type Layout = {
@@ -98,7 +104,7 @@ export const LAYOUTS: Layout[] = [
   {
     name: "linkedin",
     summary:
-      "A profile card: a coloured accent bar with the avatar straddling it, the LinkedIn badge in the corner, then the name and role. The whole card links to the person's profile.",
+      "A profile card: a coloured accent bar with the avatar straddling it, the LinkedIn badge and country flag in the corner, then the name and role. The whole card links to the person's profile.",
   },
 ];
 

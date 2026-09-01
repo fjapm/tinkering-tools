@@ -17,7 +17,7 @@ const APP_SCHEMA = {
   featureList: [
     "Build an org chart from a plain text file",
     "Live preview while you type",
-    "Headshots, phone numbers, email addresses and LinkedIn links",
+    "Headshots, phone numbers, email addresses, LinkedIn links and country flags",
     "Per-person and per-level colours",
     "Export to SVG, PNG and PDF",
   ],

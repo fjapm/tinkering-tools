@@ -9,6 +9,7 @@ const KEY_VALUE = /^(\s*)([A-Za-z0-9_-]+)(\s*=\s*)(.*?)(\s*(?:#.*)?)$/;
 const SUPPORTED_LAYOUTS = new Set(["basic", "linkedin"]);
 const LINKEDIN_HOST = /^[\w.-]*linkedin\.com\//i;
 const LINKEDIN_HANDLE = /^[\w.-]+$/;
+const COUNTRY_CODE = /^[A-Za-z]{2}$/;
 const DEFAULT_BG_COLOR = "#f7faff";
 
 /**
@@ -110,6 +111,11 @@ function readPeople(raw: unknown): Person[] | string {
       profile = normalized;
     }
 
+    const country = asString(table.country);
+    if (country && !COUNTRY_CODE.test(country.trim())) {
+      return `Invalid country "${country}" for position "${position}" — expected a two-letter country code like BR or US.`;
+    }
+
     people.push({
       position,
       title: asString(table.title) ?? "",
@@ -119,6 +125,7 @@ function readPeople(raw: unknown): Person[] | string {
       email: asString(table.email) ?? undefined,
       headshot: asString(table.headshot) ?? undefined,
       linkedin: profile,
+      country: country ? country.trim().toUpperCase() : undefined,
     });
   }
   return people;

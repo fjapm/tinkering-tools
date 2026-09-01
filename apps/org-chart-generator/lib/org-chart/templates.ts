@@ -158,14 +158,18 @@ footnote = "Every card links to a LinkedIn profile. Links survive the SVG and PD
 bg_color = "#eef1f5"
 
 # The "linkedin" layout draws a profile card: a coloured accent bar with the
-# avatar straddling it, the LinkedIn badge in the corner, then the name and the
-# role. Clicking a card opens that profile in a new tab.
+# avatar straddling it, the LinkedIn badge and the country flag in the corner,
+# then the name and the role. Clicking a card opens that profile in a new tab.
 #
 # "color" sets the accent bar (and the header band in the basic layout). Any
 # CSS colour works; it overrides color_different_rows for that person.
 #
 # "linkedin" accepts a full https URL, a scheme-less linkedin.com path, or just
 # a profile handle — all three appear below. These are placeholders.
+#
+# "country" is a two-letter country code and draws that country's flag to the
+# right of the badge. The badge and the flag are independent: a person can have
+# either, both, or neither.
 
 [person]
 position = 1
@@ -174,6 +178,7 @@ name = "Lars Peeters"
 color = "#f97316"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Lars%20Peeters&size=96&backgroundColor=f97316"
 linkedin = "https://www.linkedin.com/in/example-lars-peeters"
+country = "NL"
 
 [person]
 position = 1.1
@@ -182,6 +187,7 @@ name = "Aaron Loeb"
 color = "#f59e0b"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Aaron%20Loeb&size=96&backgroundColor=f59e0b"
 linkedin = "www.linkedin.com/in/example-aaron-loeb"
+country = "US"
 
 [person]
 position = 1.1.1
@@ -190,6 +196,7 @@ name = "Drew Feig"
 color = "#f59e0b"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Drew%20Feig&size=96&backgroundColor=f59e0b"
 linkedin = "example-drew-feig"
+country = "US"
 
 [person]
 position = 1.2
@@ -198,6 +205,7 @@ name = "Daniel Gallego"
 color = "#ef4444"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Daniel%20Gallego&size=96&backgroundColor=ef4444"
 linkedin = "https://www.linkedin.com/in/example-daniel-gallego"
+country = "ES"
 
 [person]
 position = 1.2.1
@@ -206,6 +214,7 @@ name = "Adora Montminy"
 color = "#ef4444"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Adora%20Montminy&size=96&backgroundColor=ef4444"
 linkedin = "https://www.linkedin.com/in/example-adora-montminy"
+country = "FR"
 
 [person]
 position = 1.3
@@ -214,6 +223,7 @@ name = "Pedro Fernandes"
 color = "#22c55e"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Pedro%20Fernandes&size=96&backgroundColor=22c55e"
 linkedin = "https://www.linkedin.com/in/example-pedro-fernandes"
+country = "PT"
 
 # A long role wraps onto a second line, and every card grows to match.
 
@@ -224,6 +234,7 @@ name = "Ketut Susilo"
 color = "#22c55e"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Ketut%20Susilo&size=96&backgroundColor=22c55e"
 linkedin = "https://www.linkedin.com/in/example-ketut-susilo"
+country = "ID"
 
 [person]
 position = 1.4
@@ -232,15 +243,17 @@ name = "Juliana Silva"
 color = "#ec4899"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Juliana%20Silva&size=96&backgroundColor=ec4899"
 linkedin = "https://www.linkedin.com/in/example-juliana-silva"
+country = "BR"
 
 # No headshot and no profile: the avatar falls back to initials and the card
-# renders without the badge and without a link.
+# renders without the badge and without a link. The flag still shows.
 
 [person]
 position = 1.4.1
 title = "VP, Community"
 name = "Estelle Darcy"
 color = "#14b8a6"
+country = "IE"
 
 [person]
 position = 1.5
@@ -249,6 +262,7 @@ name = "Olivia Wilson"
 color = "#6366f1"
 headshot = "https://api.dicebear.com/9.x/notionists/png?seed=Olivia%20Wilson&size=96&backgroundColor=6366f1"
 linkedin = "https://www.linkedin.com/in/example-olivia-wilson"
+country = "GB"
 `;
 
 export type Template = {
