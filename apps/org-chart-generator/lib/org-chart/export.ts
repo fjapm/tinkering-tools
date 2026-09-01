@@ -5,6 +5,19 @@ const XLINK_NS = "http://www.w3.org/1999/xlink";
 /** A completed export, plus anything the user should know about it. */
 export type ExportResult = { warning: string | null };
 
+/** Portrait point dimensions. The PDF exporter turns the sheet for wide charts. */
+export const PAPER_SIZES = {
+  a4: { label: "A4", width: 595.28, height: 841.89 },
+  letter: { label: "Letter", width: 612, height: 792 },
+} as const;
+
+export type PaperSize = keyof typeof PAPER_SIZES;
+
+export const DEFAULT_PAPER: PaperSize = "a4";
+
+/** Keeps the chart off the unprintable strip at the edge of a sheet. */
+const PAGE_MARGIN = 24;
+
 function save(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -105,7 +118,16 @@ export async function renderPng(chart: RenderedChart): Promise<{ blob: Blob; dro
   return { blob: await rasterize(svg, chart, 2), dropped };
 }
 
-export async function renderPdf(chart: RenderedChart): Promise<{ blob: Blob; dropped: number }> {
+/**
+ * Fit the whole chart onto one sheet of the chosen paper, turned landscape when
+ * the chart is wider than it is tall so the fitted scale is as large as it can
+ * be. A chart much wider than a page still ends up small — that is the ratio,
+ * not the fitting; SVG export is the way to keep it at full size.
+ */
+export async function renderPdf(
+  chart: RenderedChart,
+  paper: PaperSize = DEFAULT_PAPER,
+): Promise<{ blob: Blob; dropped: number }> {
   const [{ jsPDF }] = await Promise.all([import("jspdf"), import("svg2pdf.js")]);
   const { svg, dropped } = await embedImages(chart.svg);
 
@@ -118,12 +140,32 @@ export async function renderPdf(chart: RenderedChart): Promise<{ blob: Blob; dro
   document.body.appendChild(host);
 
   try {
+    const sheet = PAPER_SIZES[paper];
+    const landscape = chart.width >= chart.height;
+    const pageWidth = landscape ? sheet.height : sheet.width;
+    const pageHeight = landscape ? sheet.width : sheet.height;
+
     const pdf = new jsPDF({
-      orientation: chart.width >= chart.height ? "landscape" : "portrait",
+      orientation: landscape ? "landscape" : "portrait",
       unit: "pt",
-      format: [chart.width, chart.height],
+      // Always the portrait pair — jsPDF turns it itself to match the
+      // orientation above, so passing pre-turned dimensions would undo it.
+      format: [sheet.width, sheet.height],
     });
-    await pdf.svg(element, { width: chart.width, height: chart.height });
+
+    const scale = Math.min(
+      (pageWidth - PAGE_MARGIN * 2) / chart.width,
+      (pageHeight - PAGE_MARGIN * 2) / chart.height,
+    );
+    const width = chart.width * scale;
+    const height = chart.height * scale;
+
+    await pdf.svg(element, {
+      x: (pageWidth - width) / 2,
+      y: (pageHeight - height) / 2,
+      width,
+      height,
+    });
     return { blob: pdf.output("blob"), dropped };
   } finally {
     host.remove();
@@ -136,8 +178,12 @@ export async function downloadPng(chart: RenderedChart, filename = "org-chart.pn
   return { warning: droppedWarning(dropped) };
 }
 
-export async function downloadPdf(chart: RenderedChart, filename = "org-chart.pdf"): Promise<ExportResult> {
-  const { blob, dropped } = await renderPdf(chart);
+export async function downloadPdf(
+  chart: RenderedChart,
+  paper: PaperSize = DEFAULT_PAPER,
+  filename = "org-chart.pdf",
+): Promise<ExportResult> {
+  const { blob, dropped } = await renderPdf(chart, paper);
   save(blob, filename);
   return { warning: droppedWarning(dropped) };
 }

@@ -43,7 +43,7 @@ color_different_rows = true`,
   {
     title: "Export the chart",
     body:
-      "SVG stays vector and keeps LinkedIn links clickable. PNG is a 2x raster for slides and documents. PDF is vector too, and profile links become real PDF link annotations. Remote headshots are fetched and embedded into the PNG and PDF so the files stand alone.",
+      "SVG stays vector and keeps LinkedIn links clickable. PNG is a 2x raster for slides and documents. PDF is vector too, and profile links become real PDF link annotations; it fits the whole chart onto one sheet of the paper size next to the button, turned landscape when the chart is wider than it is tall. A chart far wider than a page still lands small on it — export SVG when you need it at full size. Remote headshots and flags are fetched and embedded into the PNG and PDF so the files stand alone.",
   },
 ];
 

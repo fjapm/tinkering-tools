@@ -11,19 +11,28 @@ import {
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { downloadPdf, downloadPng, downloadSvg, type ExportResult } from "@/lib/org-chart/export";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DEFAULT_PAPER,
+  downloadPdf,
+  downloadPng,
+  downloadSvg,
+  PAPER_SIZES,
+  type PaperSize,
+} from "@/lib/org-chart/export";
 import type { RenderedChart } from "@/lib/org-chart/render";
 
 type Format = "svg" | "png" | "pdf";
 
-const EXPORTERS: Record<Format, (chart: RenderedChart) => ExportResult | Promise<ExportResult>> = {
-  svg: downloadSvg,
-  png: downloadPng,
-  pdf: downloadPdf,
-};
-
 export function ChartPanel({ chart, error }: { chart: RenderedChart | null; error: string | null }) {
   const [busy, setBusy] = useState<Format | null>(null);
+  const [paper, setPaper] = useState<PaperSize>(DEFAULT_PAPER);
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportWarning, setExportWarning] = useState<string | null>(null);
 
@@ -33,7 +42,12 @@ export function ChartPanel({ chart, error }: { chart: RenderedChart | null; erro
     setExportError(null);
     setExportWarning(null);
     try {
-      const { warning } = await EXPORTERS[format](chart);
+      // Not a lookup table any more: only the PDF exporter takes an option.
+      const { warning } = await (format === "svg"
+        ? downloadSvg(chart)
+        : format === "png"
+          ? downloadPng(chart)
+          : downloadPdf(chart, paper));
       setExportWarning(warning);
     } catch (cause) {
       setExportError(cause instanceof Error ? cause.message : String(cause));
@@ -56,6 +70,19 @@ export function ChartPanel({ chart, error }: { chart: RenderedChart | null; erro
             <FileImageIcon />
             <span className="max-sm:hidden">{busy === "png" ? "Exporting…" : "PNG"}</span>
           </Button>
+          {/* Sits next to the PDF button because it only affects that export. */}
+          <Select value={paper} onValueChange={(value) => setPaper(value as PaperSize)}>
+            <SelectTrigger size="sm" aria-label="PDF paper size" className="w-auto min-w-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(PAPER_SIZES).map(([id, sheet]) => (
+                <SelectItem key={id} value={id}>
+                  {sheet.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button variant="outline" size="sm" disabled={!chart || busy !== null} onClick={() => exportAs("pdf")}>
             <FileTextIcon />
             <span className="max-sm:hidden">{busy === "pdf" ? "Exporting…" : "PDF"}</span>
